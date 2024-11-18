@@ -1,25 +1,35 @@
 ### noisy byte
 
-a test app for experimenting with observability instrumentation and performance profiling
+A test app for experimenting with observability instrumentation and performance profiling. Made with react, node js express, and sqlite3.
+
+please note this app is not intended for production use.
 
 
-## Setup
-
-### Install dependencies
+## dev setup and installation
 
 ```bash
-npm i . 
+
+# Install dependencies
+npm i .
+
+
 ```
 
 ### Run the app
 
 ```bash
+
+# start backend and database
 node server.js
+
+# start frontend
+npm start
+
 ```
 
 
 ### tools 
 
-https://fakerjs.dev/ - generate fake data
-https://www.npmjs.com/package/axios - http client
-https://www.npmjs.com/package/express - web server
+- https://fakerjs.dev/  generate fake data
+- sqeuelize - ORM
+- sqlite3 - database
