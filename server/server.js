@@ -13,8 +13,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/task", require("./routes/task-route"));
+app.use("/api/user", require("./routes/user-route"));
 app.use("/api/random", require("./routes/random-route"));
-//app.use("api/user", require("./routes/user-route"));
 
 db.sync({ alter: true }) // To update the database schema for the model
     .then(() => {

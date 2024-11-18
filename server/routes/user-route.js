@@ -1,7 +1,7 @@
 const router = require("express").Router();
-const { createTask, createRandomTask } = require("../api/task.api");
+const { getAllUsers, createRandomUser } = require("../api/user.api");
 
-router.post("/task", createTask);
-router.post("/task/random", createRandomTask);
+router.get("/get-all", getAllUsers);
+router.get("/random", createRandomUser);
 
-exports.router = router;
+module.exports = router;

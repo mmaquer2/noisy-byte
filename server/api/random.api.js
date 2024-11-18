@@ -7,6 +7,7 @@ const generateRandomTraffic = async (req, res) => {
     const randomType = type[Math.floor(Math.random() * type.length)];
     const randomPath = faker.internet.url();
     const uuid = faker.string.uuid();
+    const status_code = [200, 201, 204];
     res.json({ type: randomType, path: randomPath, uuid });
 
 };
@@ -21,7 +22,7 @@ const generateRandomErrors = async (req, res) => {
     const errorCode = [400, 401, 404, 500];
     const randomErrorCode = errorCode[Math.floor(Math.random() * errorCode.length)];
     
-    res.json({ type: randomType, path: randomPath, uuid });
+    res.json({ code: randomErrorCode ,type: randomType, path: randomPath, uuid });
 };
 
 
