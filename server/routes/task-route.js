@@ -1,26 +1,9 @@
 const router = require("express").Router();
-const { getAllTasks, createRandomTask } = require("../api/task.api");
+const { getAllTasks, createRandomTask, createTask } = require("../api/task.api");
 
-router.get("/get-all", (req, res) => {
-    try {
+router.get("/get-all", getAllTasks); 
 
-        console.log("GET /api/create-task route called");
-        const data = getAllTasks(req, res);
-        res.json(data);
-
-    } catch (error){
-        res.status(500).json({ 
-            error: error.message,
-            message: "Failed to get all tasks" 
-        });
-    }
-    
-});
-
-router.get("/create-task", (req, res) => {
-    console.log("POST /api/create-task called");
-    res.json({ message: "POST /api/create-task called" });
-});
+router.get("/create-task", createTask);
 
 router.get("/random", async (req, res) => {
     try {
