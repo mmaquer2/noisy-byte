@@ -1,4 +1,4 @@
-### noisy byte
+# noisy byte
 
 a test app for experimenting with observability instrumentation and performance engineering concepts. Made with react, node js express, redis, and sqlite3.
 
@@ -43,6 +43,13 @@ npm run start
 this app is a basic client-server with cache architecture that allows users to create, read, update, and delete data. 
 
 
+## deployments
+
+this app is not intended for production use. but to deploy the app to a cloud provider, you can use the following steps to run the docker images in the cloud service of your choosing.
+
+
+wip
+
 ## experiments
 
 wip (look at the experiments folder for more info)
@@ -55,6 +62,7 @@ wip (look at the experiments folder for more info)
 - express - server
 - react - client
 - redis - cache
+
 
 
 ### recommended reading
