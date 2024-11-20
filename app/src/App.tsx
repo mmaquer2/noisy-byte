@@ -1,16 +1,17 @@
-
-import './App.css'
+import { Routes, Route } from 'react-router-dom';
+import Login from './components/Login';
+import Dashboard from './pages/dashboard';
 
 function App() {
-  
-
   return (
-    <>
-      <h3>
-        welcome to noisy byte
-      </h3>
-    </>
-  )
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/dashboard" element={<Dashboard />} /> 
+      {/* <Route path="/profile" element={<Profile />} /> */}
+      {/* <Route path="*" element={<NotFound />} /> */}
+    </Routes>
+  );
 }
 
-export default App
+export default App;

@@ -1,9 +1,7 @@
-import React from 'react';
+import '../App.css';
 
-function dashboard() {
+export default function Dashboard() {
     
-
-
     return (
         <>
             <h1>Dashboard</h1>
@@ -11,4 +9,3 @@ function dashboard() {
     );
 }
 
-export default dashboard;
