@@ -11,16 +11,16 @@ the application is based on a client-server architecture. The client is a react 
 
 ```bash
 # clone the repo
-git clone <project_github_fqdn>
+git clone https://github.com/mmaquer2/noisy-byte.git
 
 # install dependencies
 cd noisy-byte/app
-cd noisy-byte/server
+npm install
 
+cd noisy-byte/server
 npm install
 
 ## start the redis service 
-
 # for mac users
 brew install redis # Install Redis
 brew services start redis # Start Redis
@@ -30,19 +30,21 @@ sudo apt-get install redis-server
 sudo systemctl start redis-server
 
 # start backend and database
-node server/server.js
+cd server
+node server.js
 
 # start frontend
-npm start
+cd app
+npm run start
 ```
 
 ## features
 
 this app is a basic client-server with cache architecture that allows users to create, read, update, and delete data. 
-- notes on observability and performance engineering experiments to try
 
 
-## Experiments
+## experiments
+
 wip (look at the experiments folder for more info)
 
 ### frameworks, libraries, and tools used in this project
