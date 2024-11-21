@@ -16,6 +16,9 @@ const Task = sequelize.define('Task', {
     uuid: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4
+    },
+    user_id: {
+        type: DataTypes.INTEGER
     }
 });
 

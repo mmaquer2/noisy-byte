@@ -1,5 +1,4 @@
 
-// Require dependencies
 const { NodeSDK } = require('@opentelemetry/sdk-node');
 const { ConsoleSpanExporter } = require('@opentelemetry/sdk-trace-node');
 const {
@@ -10,12 +9,18 @@ const {
   ConsoleMetricExporter,
 } = require('@opentelemetry/sdk-metrics');
 
+// TODO: export the SDK metrics to prometheus or other monitoring system
+
 const sdk = new NodeSDK({
   traceExporter: new ConsoleSpanExporter(),
-  metricReader: new PeriodicExportingMetricReader({
-    exporter: new ConsoleMetricExporter(),
-  }),
+
+  // Uncomment the following lines to enable metrics
+ // metricReader: new PeriodicExportingMetricReader({
+ //   exporter: new ConsoleMetricExporter(),
+  //}),
+  
   instrumentations: [getNodeAutoInstrumentations()],
 });
 
-sdk.start();
+// To start the SDK, uncomment the following line
+//sdk.start();

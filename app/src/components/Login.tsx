@@ -40,9 +40,9 @@ export default function Login() {
                 console.log('Logged in successfully');
                 
                 //TODO: redirect to dashboard
-            
                 //const response = await loginUser(formData);
                 //localStorage.setItem('token', response.token); // store session token
+                
                 navigate('/dashboard');
                 
 

@@ -1,17 +1,15 @@
-require('./instrumentation.js'); 
+require('./models/instrumentation.js'); 
 require('dotenv').config();
 const { metrics } = require('@opentelemetry/api');
 const express = require("express");
 const cors = require('cors');
 const { createClient } = require("redis");  
 const db = require('./config/db');
-
+const logger = require('./config/logger');
 
 const meter = metrics.getMeter('requests');
 const requestCounter = meter.createCounter('http_requests_total');
 const responseTimeHistogram = meter.createHistogram('http_response_time_seconds');
-
-
 
 
 console.log("STARTING NOISY BYTE IN " + process.env.NODE_ENV + " MODE");
@@ -33,30 +31,33 @@ const startServer = async () => {
         app.use(express.json());
         app.use(cors());
 
-        // Middleware to track requests and response time
         app.use((req, res, next) => {
-            const startTime = Date.now();
-
-            // Count request
-            requestCounter.add(1, {
-                path: req.path,
-                method: req.method
-            });
-
-            // Track response time
-            res.on('finish', () => {
-                const duration = (Date.now() - startTime) / 1000; // Convert to seconds
-                responseTimeHistogram.record(duration, {
-                    path: req.path,
-                    method: req.method,
-                    status_code: res.statusCode.toString()
-                });
-            });
-
+            logger.info(`${req.method} ${req.path}`);
             next();
         });
 
+        // Middleware to track requests and response time
+        // app.use((req, res, next) => {
+        //     const startTime = Date.now();
 
+        //     // Count request
+        //     requestCounter.add(1, {
+        //         path: req.path,
+        //         method: req.method
+        //     });
+
+        //     // Track response time
+        //     res.on('finish', () => {
+        //         const duration = (Date.now() - startTime) / 1000; // Convert to seconds
+        //         responseTimeHistogram.record(duration, {
+        //             path: req.path,
+        //             method: req.method,
+        //             status_code: res.statusCode.toString()
+        //         });
+        //     });
+
+        //     next();
+        // });
 
         app.locals.redisClient = redisClient;
 
@@ -72,6 +73,7 @@ const startServer = async () => {
         
         app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
+            console.log("Noisy Byte is ready to make some noise! :music:");
         });
     } catch (err) {
         console.error('Error during startup:', err);

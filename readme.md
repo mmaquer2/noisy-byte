@@ -4,6 +4,8 @@ a test app for experimenting with observability instrumentation and performance 
 
 please note this app is not intended for production use and is purpose is soley as a learning tool.
 
+link to blog article on this project (coming soon)
+
 
 ## local installation and dev setup
 
@@ -48,7 +50,14 @@ this app is a basic client-server with cache architecture that allows users to c
 this app is not intended for production use. but to deploy the app to a cloud provider, you can use the following steps to run the docker images in the cloud service of your choosing.
 
 
+using docker and docker-compose, you can build and run the app in a containerized environment. 
+These have been tested on a local machine and on a digital ocean droplet.
+
+```bash
+
 wip
+
+```
 
 ## experiments
 
@@ -57,13 +66,19 @@ wip (look at the experiments folder for more info)
 ### frameworks, libraries, and tools used in this project
 
 - https://fakerjs.dev/  - generate fake data
+- winston - logging
+- opentelemetry - observability (tracing, metrics, logging)
 - sqeuelize - ORM
 - sqlite3 - database
 - express - server
 - react - client
 - redis - cache
+- auth - jwt 
+- bycrpt - password hashing
 
 
 
-### recommended reading
+### interesting project reads
+
 - intro to redis and node js, https://www.digitalocean.com/community/tutorials/how-to-implement-caching-in-node-js-using-redis
+- creating sane and custom node js express logs with winston, https://betterstack.com/community/guides/logging/how-to-install-setup-and-use-winston-and-morgan-to-log-node-js-applications/
