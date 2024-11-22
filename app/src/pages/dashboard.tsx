@@ -93,20 +93,28 @@ export default function Dashboard() {
         }
     };
 
-    const toggleTodo = async (id: number) => {
+    const toggleTodo = async (id: number, status:string, description: string ) => {
         try {
-            // Add API call to update task status
-            const response = await fetch(`/api/task/${id}`, {
+            console.log("toggleTodo id:", id);
+            const response = await fetch(`/api/task/update/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    status: 'completed'
+                    title: description,
+                    description: description,
+                    uuid: id,
+                    status: status === 'completed' ? 'pending' : 'completed',
                 })
             });
 
             if (!response.ok) throw new Error('Failed to update task');
+
+            if(response.ok) {
+                console.log("response:", response);
+                console.log("response.ok:", response.ok);
+            }
 
             setTodos(todos.map(todo => 
                 todo.id === id ? { ...todo, completed: !todo.completed } : todo
@@ -174,7 +182,7 @@ export default function Dashboard() {
                                     <input
                                         type="checkbox"
                                         checked={todo.status === 'completed'}
-                                        onChange={() => toggleTodo(todo.id)}
+                                        onChange={() => toggleTodo(todo.id, todo.status, todo.description)}
                                         className="w-5 h-5 rounded border-zinc-600 
                                                  text-blue-600 focus:ring-blue-500 focus:ring-offset-zinc-900
                                                  bg-zinc-800"

@@ -4,11 +4,18 @@ const { trace } = require('@opentelemetry/api');
 const logger = require('../config/logger');
 
 
+/// =============== HELPER FUNCTIONS ================== ///
+
+// function to invalidate cache of a specific user by user_id
 async function invalidateCache(){
     const redisClient = req.app.locals.redisClient;
     await redisClient.del('tasks:all');
 }
 
+// function to validate task object before creating or updating a task
+async function validateTask(task) {
+    // TODO: implement validation logic
+};
 
 /// ===================  USER TASK CRUD FUNCTIONS ====================== ///
 
@@ -87,7 +94,14 @@ const createUserTask = async (req, res) => {
             console.error("Failed to invalidate cache:", redisError);
         }
 
-        console.log("new task created successfully");
+        logger.info('Task created successfully', {  
+            "task_id": newTask.id,
+            "title": newTask.title,
+            "description": newTask.description,
+            "status": newTask.status,
+            "uuid": newTask.uuid
+        });
+        
         // TODO: send a response to the client, notifying that the task has been created
         
 
@@ -116,6 +130,8 @@ const updateUserTask = async (req, res) => {
         
         const span = trace.getTracer('users').startSpan('update-user-task');
         
+        // TODO: validate the request body and params
+
         const updatedTask = task.update({
             title: title,
             description: description,
@@ -127,11 +143,22 @@ const updateUserTask = async (req, res) => {
             }
         });
         
+         // TODO: send a response to the client, notifying that the task has been updated
+    
         res.json(updatedTask);
         span.end();
 
-        // TODO: send a response to the client, notifying that the task has been updated
-    
+        logger.info('Task updated successfully', {
+            "task_id": id,
+            "title": title,
+            "description": description,
+            "status": status,
+            "uuid": uuid
+        });
+
+        // TODO: Handle cache invalidation after response
+
+       
     } catch (error) {
         console.error('Error updating task:', error);
         logger.error('Error updating task', {
@@ -172,11 +199,18 @@ const deleteUserTask = async (req, res) => {
         // Handle cache invalidation after response
         try {
             const redisClient = req.app.locals.redisClient;
+
+            // TODO: get user_id from task object or auth session
             await redisClient.del(`tasks:user:${user_id}`);
             console.log("Cache invalidated successfully");
         } catch (redisError) {
             console.error("Failed to invalidate cache after deletion", redisError);
         }
+
+        logger.info('Task deleted successfully', {  
+            "task_id": id,
+            'user_id': user_id
+        });
 
     } catch (error) {
         console.error('Error deleting task:', error);

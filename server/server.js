@@ -1,4 +1,4 @@
-require('./models/instrumentation.js'); 
+require('./config/instrumentation.js'); 
 require('dotenv').config();
 const { metrics } = require('@opentelemetry/api');
 const express = require("express");
@@ -65,6 +65,7 @@ const startServer = async () => {
             res.send("Hello World From Noisy-Byte!");
         });
 
+        app.use("/api/auth", require("./routes/auth-route"));
         app.use("/api/task", require("./routes/task-route"));
         app.use("/api/user", require("./routes/user-route"));
         app.use("/api/random", require("./routes/random-route"));
