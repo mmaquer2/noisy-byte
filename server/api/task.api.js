@@ -4,7 +4,7 @@ const { trace } = require('@opentelemetry/api');
 const logger = require('../config/logger');
 
 
-/// =============== HELPER FUNCTIONS ================== ///
+/// ==================== HELPER FUNCTIONS =========================== ///
 
 // function to invalidate cache of a specific user by user_id
 async function invalidateCache(){
@@ -190,10 +190,8 @@ const deleteUserTask = async (req, res) => {
             }
         });
 
-
         res.json(deletedTasked);
-        span.end();
-
+        
         //TODO: send a response to the client, notifying that the task has been deleted
 
         // Handle cache invalidation after response
@@ -201,17 +199,23 @@ const deleteUserTask = async (req, res) => {
             const redisClient = req.app.locals.redisClient;
 
             // TODO: get user_id from task object or auth session
-            await redisClient.del(`tasks:user:${user_id}`);
-            console.log("Cache invalidated successfully");
+        
+        //    await redisClient.del(`tasks:user:${user_id}`);
+        //    console.log("Cache invalidated successfully");
+        
         } catch (redisError) {
             console.error("Failed to invalidate cache after deletion", redisError);
         }
 
         logger.info('Task deleted successfully', {  
-            "task_id": id,
-            'user_id': user_id
+            "task_id": id
+            //'user_id': user_id
         });
 
+        
+        span.end();
+
+       
     } catch (error) {
         console.error('Error deleting task:', error);
         logger.error('Error deleting task', {
