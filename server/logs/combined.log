@@ -466,3 +466,23 @@
 [2024-11-22T20:15:35.329Z] [32minfo[39m: Getting tasks for user
 [2024-11-22T20:15:35.341Z] [32minfo[39m: GET /api/task/get/1
 [2024-11-22T20:15:35.342Z] [32minfo[39m: Getting tasks for user
+[2024-11-22T22:07:11.637Z] [32minfo[39m: POST /api/task/create/1
+[2024-11-22T22:07:11.644Z] [32minfo[39m: Creating new task
+[2024-11-22T22:07:11.672Z] [32minfo[39m: Task created successfully
+[2024-11-22T22:07:21.649Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-22T22:07:21.652Z] [32minfo[39m: Getting tasks for user
+[2024-11-22T22:07:21.677Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-22T22:07:21.678Z] [32minfo[39m: Getting tasks for user
+[2024-11-22T22:07:23.562Z] [32minfo[39m: DELETE /api/task/delete/93
+[2024-11-22T22:07:23.563Z] [32minfo[39m: Deleting task
+[2024-11-22T22:07:23.565Z] [32minfo[39m: Task deleted successfully
+[2024-11-22T22:07:24.398Z] [32minfo[39m: DELETE /api/task/delete/95
+[2024-11-22T22:07:24.399Z] [32minfo[39m: Deleting task
+[2024-11-22T22:07:24.400Z] [32minfo[39m: Task deleted successfully
+[2024-11-22T22:07:29.841Z] [32minfo[39m: POST /api/task/create/1
+[2024-11-22T22:07:29.841Z] [32minfo[39m: Creating new task
+[2024-11-22T22:07:29.871Z] [32minfo[39m: Task created successfully
+[2024-11-22T22:07:32.670Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-22T22:07:32.672Z] [32minfo[39m: Getting tasks for user
+[2024-11-22T22:07:32.689Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-22T22:07:32.690Z] [32minfo[39m: Getting tasks for user

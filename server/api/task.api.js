@@ -29,6 +29,7 @@ const getUserTask = async (req,res ) => {
          });
 
         const span = trace.getTracer('users').startSpan('get-user-task');
+        span.setAttribute('user_id', user_id);
         const redisClient = req.app.locals.redisClient;
         const cachedData = await redisClient.get(`tasks:user:${user_id}`);
 
@@ -83,6 +84,14 @@ const createUserTask = async (req, res) => {
         });
 
         res.json(newTask);
+        span.setAttribute({ 
+                            'createdby_user': user_id,
+                            'task_id': newTask.id,
+                            'title': newTask.title,
+                            'description': newTask.description,
+                            'status': newTask.status,
+                            'uuid': newTask.uuid
+        });
         span.end();
         
         // Handle cache invalidation after response
@@ -102,9 +111,8 @@ const createUserTask = async (req, res) => {
             "uuid": newTask.uuid
         });
         
-        // TODO: send a response to the client, notifying that the task has been created
+        // TODO: send a websocket response to the client, notifying that the task has been created
         
-
     } catch(error) {
         res.status(500).json({ 
             error: error.message,
@@ -209,10 +217,14 @@ const deleteUserTask = async (req, res) => {
 
         logger.info('Task deleted successfully', {  
             "task_id": id
-            //'user_id': user_id
+            //,'user_id': user_id
         });
 
         
+        span.setAttribute({ 'task_id': id
+                            //,'user_id': user_id   
+         });
+        span.addEvent('invoking delete task');
         span.end();
 
        
