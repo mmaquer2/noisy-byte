@@ -30,6 +30,10 @@ the application is based on a client-server architecture. The client is a react 
     - npm
     - redis
 
+note for windows developers, redis is not directly supported. you can use the windows subsystem for linux (wsl) to install redis and run it as a daemon. which is the recommended way to run redis on windows. See the following link for more information on how to install redis on windows.
+https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/install-redis-on-windows/
+
+
 ```bash
 # step 1: clone the repo
 git clone https://github.com/mmaquer2/noisy-byte.git
@@ -53,9 +57,8 @@ brew services start redis # Start Redis
 # for linux users
 sudo systemctl start redis-server
 
-## for windows (note redis is not directly supported by redis )
-
-#https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/install-redis-on-windows/
+# for windows users using wsl 
+sudo service redis-server start
 
 ## step 5: start the server and client
 # start backend and database
@@ -90,7 +93,9 @@ wip
 
 - https://fakerjs.dev/  - generate fake data
 - winston - logging
-- opentelemetry - observability (tracing, metrics, logging)
+- jaeger - tracing
+- react lucid - ui components and design
+- opentelemetry - observability instrumentation (tracing, metrics, logging)
 - sqeuelize - ORM
 - sqlite3 - database
 - express - server
