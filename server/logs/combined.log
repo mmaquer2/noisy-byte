@@ -486,3 +486,117 @@
 [2024-11-22T22:07:32.672Z] [32minfo[39m: Getting tasks for user
 [2024-11-22T22:07:32.689Z] [32minfo[39m: GET /api/task/get/1
 [2024-11-22T22:07:32.690Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T15:48:13.554Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T15:48:13.557Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T15:48:13.581Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T15:48:13.581Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T15:56:46.492Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T15:56:46.493Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T16:10:31.712Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T16:10:31.713Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T16:10:31.725Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T16:10:31.726Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T16:10:41.488Z] [32minfo[39m: POST /api/task/create/1
+[2024-11-23T16:10:41.488Z] [32minfo[39m: Creating new task
+[2024-11-23T16:10:42.184Z] [32minfo[39m: Task created successfully
+[2024-11-23T16:19:27.252Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T16:19:27.253Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T16:19:27.268Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T16:19:27.268Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T16:20:28.898Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T16:20:28.899Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T16:20:35.688Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T16:20:35.688Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T16:20:37.143Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T16:20:37.143Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T16:20:50.961Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T16:20:50.962Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T16:21:05.030Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T16:21:05.031Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T16:24:13.765Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T16:24:13.765Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T16:24:13.773Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T16:24:13.773Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T16:53:47.556Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T16:53:47.557Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T16:53:47.564Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T16:53:47.565Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T17:05:49.114Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T17:05:49.115Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T17:05:49.168Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T17:05:49.168Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T17:15:27.779Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T17:15:27.779Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T17:15:27.877Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T17:15:27.877Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T17:18:38.508Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T17:18:38.508Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T17:18:38.774Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T17:18:38.774Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T17:20:51.491Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T17:20:51.491Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T17:20:51.495Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T17:20:51.496Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T17:21:56.244Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T17:21:56.244Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T17:21:56.555Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T17:21:56.555Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T17:22:01.096Z] [32minfo[39m: DELETE /api/task/delete/96
+[2024-11-23T17:22:01.097Z] [32minfo[39m: Deleting task
+[2024-11-23T17:22:01.098Z] [32minfo[39m: Task deleted successfully
+[2024-11-23T17:22:03.141Z] [32minfo[39m: DELETE /api/task/delete/97
+[2024-11-23T17:22:03.142Z] [32minfo[39m: Deleting task
+[2024-11-23T17:22:03.142Z] [32minfo[39m: Task deleted successfully
+[2024-11-23T17:22:03.739Z] [32minfo[39m: DELETE /api/task/delete/98
+[2024-11-23T17:22:03.739Z] [32minfo[39m: Deleting task
+[2024-11-23T17:22:03.740Z] [32minfo[39m: Task deleted successfully
+[2024-11-23T17:22:14.600Z] [32minfo[39m: POST /api/task/create/1
+[2024-11-23T17:22:14.601Z] [32minfo[39m: Creating new task
+[2024-11-23T17:22:14.616Z] [32minfo[39m: Task created successfully
+[2024-11-23T17:22:17.511Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T17:22:17.511Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T17:22:17.699Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T17:22:17.699Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:10:20.613Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:10:20.613Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:10:20.620Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:10:20.621Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:27:18.539Z] [32minfo[39m: POST /api/task/create/1
+[2024-11-23T22:27:18.540Z] [32minfo[39m: Creating new task
+[2024-11-23T22:27:18.556Z] [32minfo[39m: Task created successfully
+[2024-11-23T22:30:45.494Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:30:45.494Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:30:45.501Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:30:45.501Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:30:50.533Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:30:50.534Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:30:50.539Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:30:50.540Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:30:54.806Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:30:54.806Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:30:54.811Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:30:54.811Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:31:02.488Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:31:02.488Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:31:02.802Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:31:02.802Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:31:06.762Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:31:06.762Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:31:07.070Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:31:07.071Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:52:02.828Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:52:02.828Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:52:03.146Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:52:03.146Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:52:09.633Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:52:09.634Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:52:09.952Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:52:09.952Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:52:16.027Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:52:16.028Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T22:52:16.342Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T22:52:16.342Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T23:12:15.841Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T23:12:15.842Z] [32minfo[39m: Getting tasks for user
+[2024-11-23T23:12:15.852Z] [32minfo[39m: GET /api/task/get/1
+[2024-11-23T23:12:15.852Z] [32minfo[39m: Getting tasks for user

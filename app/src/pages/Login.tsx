@@ -1,7 +1,8 @@
-// src/components/Login.tsx
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Logo from '../components/Logo';
 import '../App.css'
+
 
 interface FormData {
   username: string;
@@ -61,6 +62,9 @@ export default function Login() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-zinc-800">
             <div className="max-w-md w-full p-6">
+            <div className="flex flex-col items-center mb-6">
+                    <Logo className="h-16 w-20 mb-2" />
+                </div>
                 <div className="bg-zinc-900 p-8 rounded-lg shadow-xl border border-zinc-700">
                     <h2 className="text-center text-3xl font-bold text-white mb-8">
                             welcome to noisy byte

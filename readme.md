@@ -53,9 +53,11 @@ brew services start redis # Start Redis
 # for linux users
 sudo systemctl start redis-server
 
+## for windows (note redis is not directly supported by redis )
+
+#https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/install-redis-on-windows/
 
 ## step 5: start the server and client
-
 # start backend and database
 cd server
 node server.js
