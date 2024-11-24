@@ -6,7 +6,7 @@ const logger = require('../config/logger');
 
 
 
-const createUser = async (req, res) => {
+const registerNewUser = async (req, res) => {
     try {
         
         // TODO: confirm that the request body contains the required fields
@@ -164,9 +164,20 @@ const login = async (req, res) => {
     }
 };
 
+async function logout(req, res) {
+    try {
+        // TODO: Implement logout functionality
+
+    } catch (error) {
+        logger.error('Logout error', { error: error.message });
+        res.status(500).json({ message: 'Logout failed' });
+    }
+}
+
 
 module.exports = {
-    createUser,
+    registerNewUser,
     validatePassword,
+    logout,
     login
 }

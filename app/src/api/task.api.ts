@@ -1,9 +1,7 @@
 
-
-
 async function createUserTask(taskData: { title: string, user_id: string }): Promise<any> {
     try {
-        // http://localhost:3000/api/task/create/1
+    
         const response = await fetch(`/api/task/create/1`, {
             method: 'POST',
             headers: {
@@ -19,7 +17,7 @@ async function createUserTask(taskData: { title: string, user_id: string }): Pro
 
         if (!response.ok) throw new Error('Failed to create task');
         return await response.json();
-        
+
     } catch (error) {
         console.error('Error creating task:', error);
         throw error;
@@ -31,12 +29,11 @@ async function getTasks(userId: string): Promise<any> {
         const response = await fetch(`/api/task/get/${userId}`);
         if (!response.ok) throw new Error('Failed to fetch tasks');
         const data = await response.json();
-        console.log('data:', data);
-        
-        // sort by created date 
+    
+        //TODO: sort by created date 
         //data.sort((a: TodoItem, b: TodoItem) => {
        //     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-       //  }); // Add sorting logic here
+       //  }); 
 
         return data;
     } catch (error) {
@@ -46,13 +43,40 @@ async function getTasks(userId: string): Promise<any> {
 }
 
 
-// async function updateTask(task: Task): Promise<Task> {
-//   const response = await axios.put<Task>(`${baseUrl}/tasks/${task.id}`, task);
-//   return response.data;
-// }
+async function updateTask(id: number, status:string, description: string): Promise<any> {
+    try {
+        const response = await fetch(`/api/task/update/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                title: description,
+                description: description,
+                uuid: id,
+                status: status === 'completed' ? 'pending' : 'completed',
+            })
+        });
 
-// async function deleteTask(id: number): Promise<void> {
-//   await axios.delete(`${baseUrl}/tasks/${id}`);
-// }
+        if (!response.ok) throw new Error('Failed to update task');
+        return await response.json();
 
-export { createUserTask, getTasks };
+    } catch (error) {
+        console.error('Error updating task:', error);
+        throw error;
+    }
+ }
+
+async function deleteTask(taskId: number, userId: number): Promise<any> {
+    try {
+        const response = await fetch(`/api/task/delete/${taskId}`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) throw new Error('Failed to delete task');
+        return response;
+    } catch (error) {
+        console.error('Error deleting task:', error);
+    }
+}
+
+export { createUserTask, getTasks, updateTask, deleteTask };

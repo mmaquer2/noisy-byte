@@ -11,7 +11,6 @@ const meter = metrics.getMeter('requests');
 const requestCounter = meter.createCounter('http_requests_total');
 const responseTimeHistogram = meter.createHistogram('http_response_time_seconds');
 
-
 console.log("STARTING NOISY BYTE IN " + process.env.NODE_ENV + " MODE");
 
 const PORT = process.env.PORT || 3000;
@@ -36,28 +35,28 @@ const startServer = async () => {
             next();
         });
 
-        // Middleware to track requests and response time
-        // app.use((req, res, next) => {
-        //     const startTime = Date.now();
+        //Middleware to track requests and response time
+        app.use((req, res, next) => {
+            const startTime = Date.now();
 
-        //     // Count request
-        //     requestCounter.add(1, {
-        //         path: req.path,
-        //         method: req.method
-        //     });
+            // Count request
+            requestCounter.add(1, {
+                path: req.path,
+                method: req.method
+            });
 
-        //     // Track response time
-        //     res.on('finish', () => {
-        //         const duration = (Date.now() - startTime) / 1000; // Convert to seconds
-        //         responseTimeHistogram.record(duration, {
-        //             path: req.path,
-        //             method: req.method,
-        //             status_code: res.statusCode.toString()
-        //         });
-        //     });
+            // Track response time
+            res.on('finish', () => {
+                const duration = (Date.now() - startTime) / 1000; // Convert to seconds
+                responseTimeHistogram.record(duration, {
+                    path: req.path,
+                    method: req.method,
+                    status_code: res.statusCode.toString()
+                });
+            });
 
-        //     next();
-        // });
+            next();
+        });
 
         app.locals.redisClient = redisClient;
 

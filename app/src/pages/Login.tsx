@@ -1,5 +1,6 @@
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { loginUser } from '../api/auth.api';
 import Logo from '../components/Logo';
 import '../App.css'
 
@@ -33,23 +34,10 @@ export default function Login() {
 
         try {
             console.log('Logging in with:', formData);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // testing login only to mock the login process
-
-            if (formData.username === 'admin' && formData.password === 'admin') {
-                console.log('Logged in successfully');
-                
-                //TODO: redirect to dashboard
-                //const response = await loginUser(formData);
-                //localStorage.setItem('token', response.token); // store session token
-                
-                navigate('/dashboard');
-                
-
-            } else {
-                throw new Error('Invalid username or password');
-            }
+    
+            const user = await loginUser(formData.username, formData.password);
+            console.log('Logged in:', user);
+            navigate('/dashboard');
 
         } catch (err) {
             setError('Invalid username or password');

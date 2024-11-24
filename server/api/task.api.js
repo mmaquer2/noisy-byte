@@ -51,7 +51,10 @@ const getUserTask = async (req, res) => {
             // Add Redis check event
             span.addEvent('checking_redis_cache');
             const redisClient = req.app.locals.redisClient;
-            const cachedData = await redisClient.get(`tasks:user:${user_id}`);
+
+            // TODO: remove this once auth is implemented
+           // const cachedData = await redisClient.get(`tasks:user:${user_id}`);
+            const cachedData = null;
 
             if (cachedData) {
                 span.setAttributes({

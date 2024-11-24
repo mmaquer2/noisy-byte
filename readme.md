@@ -74,24 +74,18 @@ npm run start
 
 ### setting up jaeger for tracing (optional)
 
-The application is thoroughly instrumented with open telemetry. If you would like to setup jaeger for tracing, you can follow the steps below. 
+The application is thoroughly instrumented with open telemetry. If you would like to setup jaeger for visualizing the tracing telemtery, you can follow the steps below. 
 
-The application is instrumented with the open telemetry sdk for node js. The instrumentation code can be found in the /server/config/instrumentation.js file.
-
-
-https://docs.docker.com/desktop/features/wsl/
+The instrumentation  config code can be found in the /server/config/instrumentation.js file.
 
 ```bash
-
 # step 1: verify docker is installed 
 docker --version 
 
 # stpe 2: pull the jaeger all in one container
 docker pull jaegertracing/all-in-one:latest
 
-
 # step 3: start the jaeger all in one container
-
 docker run --rm \
   -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 \
   -p 16686:16686 \
@@ -99,6 +93,8 @@ docker run --rm \
   -p 4318:4318 \
   -p 9411:9411 \
   jaegertracing/all-in-one:latest
+
+# step 4: open the browser and navigate to http://localhost:16686 to view the jaeger ui
 
 ```
 
@@ -114,8 +110,8 @@ wip
 
 - https://fakerjs.dev/  - generate fake data
 - winston - logging
-- jaeger - tracing
-- react lucid - ui components and design
+- jaeger - tracing visualization
+- react lucid - ui components and design https://lucide.dev/
 - opentelemetry - observability instrumentation (tracing, metrics, logging)
 - sqeuelize - ORM
 - sqlite3 - database

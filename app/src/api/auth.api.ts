@@ -1,29 +1,84 @@
 
-function loginUser(formData:object) {
-    // This is a fake login function that will return a user object if the username and password are correct.
-    // In a real application, you would make a request to the server to authenticate the user.
-    if (formData.username === 'admin' && formData.password === 'admin') {
-        return {
-        id: 1,
+async function loginUser(username: string, password: string): Promise<any> {
+   
+  // testing login only to mock the login process
+   if (username === 'admin' && password === 'admin') {
+    console.log('Logged in successfully');
+    localStorage.setItem('user', 
+      JSON.stringify({
+          username: 'admin',
+          email: 'admin',
+          avatar: '',
+          user_id : 1,
+          token: '1234'
+  }));
+  
+  return {
         username: 'admin',
-        email: '',
-        firstName: 'Admin',
+        email: 'admin',
+        avatar: '',
+        user_id : 1,
+        token: '1234'
+    };
+
+    
+  }
+
+  try {
+    // TODO: Test this code with a real hashed password
+        const response = await fetch(`/api/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password,
+            })
+        });
+
+        if (!response.ok) throw new Error('Failed to login');
+
+        // create new stored user local
 
 
-        lastName: 'User',
-        role: 'admin',
-        };
+        return await response.json();
+
+    } catch (error) {
+        console.error('Error logging in:', error);
+        throw error;
     }
-
+ 
 }
 
 
-//**
+async function registerUser(username: string, password: string): Promise<any> {
+    try {
+        const response = await fetch(`/api/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password,
+                email: '',
+                avatar: '',
+            })
+        });
 
+        if (!response.ok) throw new Error('Failed to register');
+        return await response.json();
 
-function logout() {
-  // This is a fake logout function that will remove the user from the local storage.
-  // In a real application, you would make a request to the server to remove the user's session.
-  localStorage.removeItem('user');
-  window.location.href = '/login';
+    } catch (error) {
+        console.error('Error registering:', error);
+        throw error;
+    }
 }
+
+
+async function logout() {
+
+}
+
+export { loginUser, registerUser, logout };

@@ -10,6 +10,14 @@ interface TodoItem {
     updatedAt: string;
 }
 
+interface StoredUserLocal {
+    username: string;
+    email: string;
+    avatar: string;
+    user_id: string;
+    token: string;
+}
+
 interface User {
     id: number;
     uuid: string;
