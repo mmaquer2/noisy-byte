@@ -1,31 +1,11 @@
 import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
+import { createUserTask, getTasks } from '../api/task.api';
 import NavHeader from '../components/NavHeader';
-import "../App.css"
-
-interface TodoItem {
-    id: number;
-    uuid: string;
-    title: string;
-    description: string;
-    status: string;
-    user_id: string;
-    completed: boolean;
-    createdAt: string;
-    updatedAt: string;
-}
+import "../App.css";
 
 const fetchToDos = async (userId: string) => {    
     try {
-        const response = await fetch(`/api/task/get/${userId}`);
-        if (!response.ok) throw new Error('Failed to fetch tasks');
-        const data = await response.json();
-        console.log('data:', data);
-        
-        // sort by created date 
-        //data.sort((a: TodoItem, b: TodoItem) => {
-       //     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-       //  }); // Add sorting logic here
-
+        const data = await getTasks(userId);
         return data;
     } catch (error) {
         console.error('Error fetching todos:', error);
@@ -34,25 +14,9 @@ const fetchToDos = async (userId: string) => {
 };
 
 const createTask = async (taskData: { title: string, user_id: string }) => {
-
-    console.log("taskData:", taskData);
-
     try {
-        // http://localhost:3000/api/task/create/1
-        const response = await fetch(`/api/task/create/1`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                title: taskData.title,
-                description: taskData.title,
-                status: 'pending',
-                user_id: taskData.user_id,
-            })
-        });
-        if (!response.ok) throw new Error('Failed to create task');
-        return await response.json();
+        const data = await createUserTask(taskData);
+        return data;
     } catch (error) {
         console.error('Error creating task:', error);
         throw error;

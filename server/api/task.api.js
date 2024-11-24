@@ -2,6 +2,7 @@ const { faker } = require('@faker-js/faker');
 const task = require("../models/task");
 const { trace } = require('@opentelemetry/api');
 const logger = require('../config/logger');
+const { context } = require('@opentelemetry/api');
 
 
 /// ==================== HELPER FUNCTIONS =========================== ///
@@ -19,48 +20,118 @@ async function validateTask(task) {
 
 /// ===================  USER TASK CRUD FUNCTIONS ====================== ///
 
-const getUserTask = async (req,res ) => {
+const getUserTask = async (req, res) => {
     const user_id = req.params.id;
     
+    // Create a new span
+    const tracer = trace.getTracer('users');
+    const currentContext = context.active();
+    
+    // Start span with active context
+    const span = tracer.startSpan('get-user-task', {}, currentContext);
+    
+    // Create new context with this span
+    const contextWithSpan = trace.setSpan(currentContext, span);
+
     try {
-
-        logger.info('Getting tasks for user', { 
-             "user_id": user_id
-         });
-
-        const span = trace.getTracer('users').startSpan('get-user-task');
-        span.setAttribute('user_id', user_id);
-        const redisClient = req.app.locals.redisClient;
-        const cachedData = await redisClient.get(`tasks:user:${user_id}`);
-
-        if(cachedData) {
-            return res.json(JSON.parse(cachedData));
-        } else {
-            const tasks = await task.findAll({
-                where: {
-                    user_id: user_id
-                }
+        // Activate the new context for all operations within
+        return await context.with(contextWithSpan, async () => {
+            logger.info('Getting tasks for user', { 
+                "user_id": user_id
             });
-            await redisClient.set(`tasks:user:${user_id}`, JSON.stringify(tasks), 'EX', 60);
-            span.end();
-            if (!tasks) {
-                return res.status(404).json({
-                    message: `No tasks found for user id ${user_id}`
-                });
-            }
-            return res.json(tasks);
-        }
 
+            // Add span attributes
+            span.setAttributes({
+                'user.id': user_id,
+                'http.method': req.method,
+                'http.url': req.url,
+                'http.route': '/users/:id/tasks',
+            });
+
+            // Add Redis check event
+            span.addEvent('checking_redis_cache');
+            const redisClient = req.app.locals.redisClient;
+            const cachedData = await redisClient.get(`tasks:user:${user_id}`);
+
+            if (cachedData) {
+                span.setAttributes({
+                    'cache.hit': true,
+                    'cache.key': `tasks:user:${user_id}`,
+                    'data.size': Buffer.from(cachedData).length,
+                });
+                span.addEvent('cache_hit');
+                span.end();
+                return res.json(JSON.parse(cachedData));
+            } else {
+                span.setAttributes({
+                    'cache.hit': false
+                });
+                span.addEvent('cache_miss');
+                span.addEvent('querying_database');
+
+                const tasks = await task.findAll({
+                    where: {
+                        user_id: user_id
+                    }
+                });
+
+                span.setAttributes({
+                    'db.operation': 'findAll',
+                    'db.table': 'tasks',
+                    'result.count': tasks?.length || 0
+                });
+
+                if (tasks && tasks.length > 0) {
+                    span.addEvent('updating_redis_cache');
+                    await redisClient.set(
+                        `tasks:user:${user_id}`, 
+                        JSON.stringify(tasks), 
+                        'EX', 
+                        60
+                    );
+                    
+                    span.setAttributes({
+                        'response.status_code': 200,
+                        'response.size': Buffer.from(JSON.stringify(tasks)).length
+                    });
+                    span.end();
+                    return res.json(tasks);
+                } else {
+                    span.setAttributes({
+                        'result.empty': true,
+                        'response.status_code': 404
+                    });
+                    span.addEvent('no_tasks_found');
+                    span.end();
+                    return res.status(404).json({
+                        message: `No tasks found for user id ${user_id}`
+                    });
+                }
+            }
+        });
     } catch (error) {
-        console.error('Error fetching tasks:', error);
+        span.setAttributes({
+            'error': true,
+            'error.type': error.name,
+            'error.message': error.message,
+            'response.status_code': 500
+        });
+        
         span.recordException(error);
+        span.addEvent('error_occurred', {
+            'error.type': error.name,
+            'error.message': error.message
+        });
+        
         span.end();
+        
+        console.error('Error fetching tasks:', error);
         return res.status(500).json({ 
             error: error.message,
             message: `Failed to get all tasks for user id ${user_id}` 
         });
     }
-}
+};
 
 const createUserTask = async (req, res) => {
     const { title, description, status, user_id } = req.body;
@@ -73,7 +144,7 @@ const createUserTask = async (req, res) => {
     });
 
     try {
-        const span = trace.getTracer('users').startSpan('create-user-task');
+        const span = trace.getTracer('task').startSpan('create-user-task');
         const uuid = faker.string.uuid();
         const newTask = await task.create({
             title,          
@@ -136,7 +207,7 @@ const updateUserTask = async (req, res) => {
 
     try {
         
-        const span = trace.getTracer('users').startSpan('update-user-task');
+        const span = trace.getTracer('task').startSpan('update-user-task');
         
         // TODO: validate the request body and params
 
@@ -189,7 +260,7 @@ const deleteUserTask = async (req, res) => {
         "task_id": id
     });
     
-    const span = trace.getTracer('users').startSpan('delete-user-task');
+    const span = trace.getTracer('task').startSpan('delete-user-task');
     
     try {
         const deletedTasked = task.destroy({
@@ -248,7 +319,10 @@ const deleteUserTask = async (req, res) => {
 /////////// ==================  WILDCARD FUNCTIONS ================== ///////////
 
 const getAllTasks = async (req, res) => {
-    console.log("GET ALL TASKS /api/get-task api called");
+    const tracer = trace.getTracer('tasks');
+    const currentContext = context.active();
+    const span = tracer.startSpan('get-all-tasks', {}, currentContext);
+    const contextWithSpan = trace.setSpan(currentContext, span);
     
     if (res.headersSent) {
         console.warn('Response was already sent');
@@ -257,7 +331,7 @@ const getAllTasks = async (req, res) => {
 
     try {
 
-        const span = trace.getTracer('users').startSpan('get-all-users');
+        const span = trace.getTracer('tasks').startSpan('get-all-tasks');
         const redisClient = req.app.locals.redisClient;
         const cachedData = await redisClient.get('tasks:all');
 
@@ -294,37 +368,88 @@ const getAllTasks = async (req, res) => {
     }
 }
 
+
 const createRandomTask = async (req, res) => {
+    const tracer = trace.getTracer('tasks');
+    const currentContext = context.active();
+    const span = tracer.startSpan('create-random-task', {}, currentContext);
+    const contextWithSpan = trace.setSpan(currentContext, span);
+
     try {
+        return await context.with(contextWithSpan, async () => {
+            // Record task generation event
+            span.addEvent('generating_random_task');
+            const randomTask = faker.commerce.productName();
+            const randomDescription = faker.lorem.sentence();
+            const uuid = faker.string.uuid();
+            const status = "pending";
 
-        const randomTask = faker.commerce.productName();
-        const randomDescription = faker.lorem.sentence();
-        const uuid = faker.string.uuid();
-        const status = "pending";
+            // Add task details as attributes
+            span.setAttributes({
+                'task.title': randomTask,
+                'task.uuid': uuid,
+                'task.status': status,
+                'task.user_id': 1,
+                'task.description_length': randomDescription.length
+            });
 
-        const span = trace.getTracer('users').startSpan('get-user-task');
-        
-        const newTask = await task.create({
-            title: randomTask,          
-            description: randomDescription,
-            status: status,
-            uuid: uuid,
-            user_id: 1
+            // Record database operation event
+            span.addEvent('creating_task_in_database');
+            const newTask = await task.create({
+                title: randomTask,          
+                description: randomDescription,
+                status: status,
+                uuid: uuid,
+                user_id: 1
+            });
+
+            // Record successful creation
+            span.setAttributes({
+                'db.operation': 'create',
+                'db.table': 'tasks',
+                'task.id': newTask.id,
+                'response.status_code': 200
+            });
+
+            // Record cache clearing event
+            span.addEvent('clearing_redis_cache');
+            const redisClient = req.app.locals.redisClient;
+            await redisClient.del('tasks:all');
+            
+            span.addEvent('operation_completed', {
+                'task.id': newTask.id,
+                'timestamp': Date.now()
+            });
+
+            span.end();
+            console.log("new random task created successfully");
+            return res.json(newTask);
         });
-        
-        res.json(newTask);
-        console.log("new random task created successfully");
-        const redisClient = req.app.locals.redisClient;
-        await redisClient.del('tasks:all');
-        span.end();
 
     } catch (error) {
-        res.status(500).json({ 
+        // Record error details
+        span.setAttributes({
+            'error': true,
+            'error.type': error.name,
+            'error.message': error.message,
+            'response.status_code': 500
+        });
+
+        span.recordException(error);
+        span.addEvent('error_occurred', {
+            'error.type': error.name,
+            'error.message': error.message,
+            'timestamp': Date.now()
+        });
+
+        span.end();
+        
+        return res.status(500).json({ 
             error: error.message,
             message: "Failed to create task" 
         });
     }
-}
+};
 
 module.exports = {
     createUserTask,
