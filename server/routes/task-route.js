@@ -8,7 +8,7 @@ router.get("/create/random", createRandomTask);
 // Protected routes
 router.get('/get', authMiddleware, getUserTask);
 router.post("/create", authMiddleware, createUserTask);
-router.delete("/delete", deleteUserTask);
-router.put("/update/:id", updateUserTask);
+router.put('/update/:id', authMiddleware, updateUserTask);
+router.delete('/delete/:id', authMiddleware, deleteUserTask);
 
 module.exports = router;

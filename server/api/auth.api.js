@@ -129,10 +129,7 @@ const authMiddleware = (req, res, next) => {
         }
 
         // Verify and decode token
-        const decoded = jwt.verify(token, 'your-secret-key'); // TODO: Replace with process.env.JWT_SECRET
-        console.log('Decoded token:');
-        console.log(decoded);
-
+        const decoded = jwt.verify(token, 'your-secret-key'); // TODO: Replace with process.env.JWT_SECRE
         req.user = { id: decoded.id }; // Attach user ID to the request object
         next();
     } catch (error) {

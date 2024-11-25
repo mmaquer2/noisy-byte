@@ -114,7 +114,6 @@ const Soundboard = () => {
         </div>
       )}
 
-      {/* Warning Banner */}
       <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-lg flex items-center space-x-3">
         <AlertTriangle className="h-5 w-5 text-red-400" />
         <p className="text-red-200">
@@ -122,7 +121,7 @@ const Soundboard = () => {
         </p>
       </div>
 
-      {/* Soundboard Grid */}
+    
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {scenarios.map((scenario) => (
           <div

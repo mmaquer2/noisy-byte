@@ -5,7 +5,6 @@ const NotFound = () => {
     const navigate = useNavigate();
     const navigateHome = () => {
         navigate('/dashboard');
-
     } 
     return (
         <div className="min-h-screen bg-zinc-900 flex items-center justify-center p-4">
