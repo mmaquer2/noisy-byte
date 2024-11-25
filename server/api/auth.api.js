@@ -1,69 +1,32 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const user = require('../models/user');
-const v4 = require('uuid') 
+const { v4: uuidv4 } = require('uuid');
 const logger = require('../config/logger');
+const user = require('../models/user');
 
-
-
-const registerNewUser = async (req, res) => {
+const register = async (req, res) => {
     try {
-        
-        // TODO: confirm that the request body contains the required fields
-        //const { username, password, email, avatar } = req.body;
+        const { username, password, email, avatar } = req.body;
 
-        // for testing only
-        const new_username = "test";
-        const new_password = "test";
-        const new_email = "hello@gmail.com";
-        const new_avatar = "test.jpg";
-       // const new_uuid = v4();
-
-        // Validate input
-        if (!new_username || !new_password || !new_email) {
-            logger.warn('Invalid user creation attempt - missing fields');
-            return res.status(400).json({ 
-                message: 'Username, password, and email are required' 
-            });
+        // Check for missing fields
+        if (!username || !password || !email) {
+            logger.warn('Registration attempt with missing fields');
+            return res.status(400).json({ message: 'Missing required fields' });
         }
 
-        // Check if user exists
-        // const existingUser = await user.findOne({ 
-        //     where: { 
-        //         [Op.or]: [
-        //             { username },
-        //             { email }
-        //         ]
-        //     }
-        // });
-
-        // if (existingUser) {
-        //     logger.warn('User creation failed - duplicate user', { username, email });
-        //     return res.status(400).json({ 
-        //         message: 'Username or email already exists' 
-        //     });
-        // }
-
-
         // Hash password
-        const saltRounds = 10;
-        const new_hashedPassword = await bcrypt.hash(new_password, saltRounds);
+        const hashedPassword = await bcrypt.hash(password, 10);
         
-        // Create user
         const newUser = await user.create({
-            username: new_username,
-            email: new_email,
-            password: new_hashedPassword,
-            avatar: new_avatar
+            username,
+            email,
+            password: hashedPassword,
+            avatar: avatar || null,
+            uuid: uuidv4()
         });
 
+        logger.info('User registered successfully', { userId: newUser.id });
 
-        logger.info('User created successfully', { 
-            userId: newUser.id,
-            username: newUser.username 
-        });
-
-        // Return user data (exclude password)
         res.status(201).json({
             user: {
                 id: newUser.id,
@@ -71,89 +34,58 @@ const registerNewUser = async (req, res) => {
                 email: newUser.email,
                 uuid: newUser.uuid
             }
-           // ,token
         });
 
     } catch (error) {
-        
-        logger.error('User creation failed', { 
-            error: error.message,
-            stack: error.stack 
-        });
-
-        console.log(error);
-        res.status(500).json({ 
-            message: 'Failed to create user' 
-        });
+        logger.error('Registration error', { error: error.message });
+        res.status(500).json({ message: 'Registration failed' });
     }
 };
-
-// Password validation middleware (optional)
-const validatePassword = (req, res, next) => {
-    const { password } = req.body;
-
-    // Password requirements
-    const minLength = 8;
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumbers = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-    if (
-        password.length < minLength ||
-        !hasUpperCase ||
-        !hasLowerCase ||
-        !hasNumbers ||
-        !hasSpecialChar
-    ) {
-        return res.status(400).json({
-            message: 'Password must be at least 8 characters and contain uppercase, lowercase, numbers, and special characters'
-        });
-    }
-
-    next();
-};
-
 
 const login = async (req, res) => {
     try {
         const { username, password } = req.body;
-
-        console.log("login attempt with username: ", username);
+        const redisClient = req.app.locals.redisClient;
 
         // Find user
-        const logged_user = await user.findOne({ where: { username } });
-        if (!logged_user) {
-            logger.warn('Login attempt with non-existent user', { username });
+        const foundUser = await user.findOne({ 
+            where: { username },
+            attributes: ['id', 'username', 'password', 'avatar']
+        });
+
+        if (!foundUser || !await bcrypt.compare(password, foundUser.password)) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        console.log("found user: ", logged_user)
-        console.log("trying to login for user: ", logged_user)
-        console.log("trying to login for user: ", logged_user.password)
-
-        // Verify password
-        const isValidPassword = await bcrypt.compare(password, logged_user.password);
-        
-        if (!isValidPassword) {
-            logger.warn('Invalid password attempt', { username });
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
-        
-        // Generate token
-        const token = jwt.sign(
+        // Generate access token
+        const accessToken = jwt.sign(
             { 
-                id: logged_user.id, 
-                username: logged_user.username 
+                id: foundUser.id,
+                username: foundUser.username
             },
             process.env.JWT_SECRET || 'your-secret-key',
             { expiresIn: '24h' }
         );
 
-        logger.info('User logged in successfully', { userId: user.id });
+        // Store session in Redis
+        await redisClient.set(
+            `session:${foundUser.id}`,
+            JSON.stringify({
+                userId: foundUser.id,
+                username: foundUser.username
+            }),
+            'EX',
+            24 * 60 * 60 // 24 hours
+        );
+
+        logger.info('User logged in', { userId: foundUser.id });
 
         res.json({
-            token
+            token: accessToken,
+            user: {
+                username: foundUser.username,
+                avatar: foundUser.avatar
+            }
         });
 
     } catch (error) {
@@ -163,43 +95,56 @@ const login = async (req, res) => {
     }
 };
 
-async function logout(req, res) {
+const logout = async (req, res) => {
     try {
-        // TODO: Implement logout functionality
+        const redisClient = req.app.locals.redisClient;
+        const authHeader = req.headers.authorization;
+        
+        if (authHeader?.startsWith('Bearer ')) {
+            const token = authHeader.split(' ')[1];
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+            
+            // Remove session from Redis
+            await redisClient.del(`session:${decoded.id}`);
+        }
 
+        res.json({ message: 'Logged out successfully' });
     } catch (error) {
         logger.error('Logout error', { error: error.message });
         res.status(500).json({ message: 'Logout failed' });
     }
-}
+};
 
 
-const authMiddleware = async (req, res, next) => {
+const authMiddleware = (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader?.startsWith('Bearer ')) {
-            return res.status(401).json({ message: 'No token provided' });
+        const authHeader = req.headers['authorization'];
+        if (!authHeader) {
+            return res.status(401).json({ message: 'Authorization header missing' });
         }
 
-        const token = authHeader.split(' ')[1];
-        
-        // Verify the token
-        const decoded = jwt.verify(token, "your-secret-key");
-        
-        // Attach userId to request object
-        req.userId = decoded.userId;
-        
+        const token = authHeader.split(' ')[1]; // Extract token from "Bearer <token>"
+        if (!token) {
+            return res.status(401).json({ message: 'Token missing in Authorization header' });
+        }
+
+        // Verify and decode token
+        const decoded = jwt.verify(token, 'your-secret-key'); // TODO: Replace with process.env.JWT_SECRET
+        console.log('Decoded token:');
+        console.log(decoded);
+
+        req.user = { id: decoded.id }; // Attach user ID to the request object
         next();
     } catch (error) {
-        return res.status(401).json({ message: 'Invalid token' });
+        console.error('Authentication error:', error);
+        return res.status(401).json({ message: 'Invalid or expired token' });
     }
 };
 
 
 module.exports = {
-    registerNewUser,
-    validatePassword,
-    logout,
+    register,
     login,
+    logout,
     authMiddleware
-}
+};

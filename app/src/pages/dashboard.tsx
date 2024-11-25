@@ -3,9 +3,11 @@ import { createUserTask, getTasks, deleteTask } from '../api/task.api';
 import NavHeader from '../components/NavHeader';
 import "../App.css";
 
-const fetchToDos = async (userId: string) => {
+const fetchToDos = async () => {
     try {
-        const data = await getTasks(userId);
+        console.log('Fetching todos...');
+        const data = await getTasks(); // No user_id required
+        console.log('Fetched todos:', data);
         return data;
     } catch (error) {
         console.error('Error fetching todos:', error);
@@ -13,9 +15,10 @@ const fetchToDos = async (userId: string) => {
     }
 };
 
-const createTask = async (taskData: { title: string, user_id: string }) => {
+const createTask = async (taskData: { title: string }) => {
     try {
-        const data = await createUserTask(taskData);
+        console.log('Creating task:', taskData);
+        const data = await createUserTask(taskData); // No user_id required
         return data;
     } catch (error) {
         console.error('Error creating task:', error);
@@ -27,45 +30,27 @@ export default function Dashboard() {
     const [newTask, setNewTask] = useState<string>('');
     const [todos, setTodos] = useState<TodoItem[]>([]);
     const [error, setError] = useState<string | null>(null);
-    const [userId, setUserId] = useState<string | null>(null);
 
-    // turning off fetch tasks to test auth setup
-
-    // useEffect(() => {
-    //     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    //     if (user?.user_id) {
-    //         setUserId(user.user_id);
-    //     } else {
-    //         console.error('No user found in local storage');
-    //         setError('Failed to fetch user. Please log in.');
-    //     }
-    // }, []);
-
-    // useEffect(() => {
-    //     if (userId) {
-    //         fetchToDos(userId)
-    //             .then(data => setTodos(data))
-    //             .catch(() => setError('Failed to load tasks'));
-    //     }
-    // }, [userId]);
+    useEffect(() => {
+        fetchToDos()
+            .then(data => setTodos(data))
+            .catch(() => setError('Failed to load tasks'));
+    }, []);
 
     const handleSubmit = useCallback(
         async (e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
-            if (!newTask.trim() || !userId) return;
+            if (!newTask.trim()) return;
 
             try {
-                const createdTask = await createTask({
-                    title: newTask.trim(),
-                    user_id: userId,
-                });
+                const createdTask = await createTask({ title: newTask.trim() });
                 setTodos(prev => [...prev, { ...createdTask, completed: createdTask.status === 'completed' }]);
                 setNewTask('');
             } catch {
                 setError('Failed to create task');
             }
         },
-        [newTask, userId]
+        [newTask]
     );
 
     const toggleTodo = useCallback(
@@ -100,7 +85,7 @@ export default function Dashboard() {
     const deleteTodo = useCallback(
         async (id: number) => {
             try {
-                const response = await deleteTask(id, userId);
+                const response = await deleteTask(id);
                 if (!response.ok) throw new Error('Failed to delete task');
                 setTodos(prev => prev.filter(todo => todo.id !== id));
             } catch {
