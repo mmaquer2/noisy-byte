@@ -36,7 +36,7 @@ export default function Login() {
             console.log('Logging in with:', formData);
             const user = await loginUser(formData.username, formData.password);
             if(user){
-                navigate('/dashboard');
+                navigate('/dashboard')
             }
             
 

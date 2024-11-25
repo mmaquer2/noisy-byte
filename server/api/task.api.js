@@ -4,175 +4,168 @@ const { trace } = require('@opentelemetry/api');
 const logger = require('../config/logger');
 const { context } = require('@opentelemetry/api');
 
-
-
-/// ==================== HELPER FUNCTIONS =========================== ///
-
-// function to invalidate cache of a specific user by user_id
-async function invalidateCache(){
-    const redisClient = req.app.locals.redisClient;
-    await redisClient.del('tasks:all');
-}
-
-// function to validate task object before creating or updating a task
-async function validateTask(task) {
-    // TODO: implement validation logic
-};
-
 /// ===================  USER TASK CRUD FUNCTIONS ====================== ///
 
 const getUserTask = async (req, res) => {
 
-
-    // TODO: refactor this to use auth middleware to get user_id, from session or token
-    const user_id = req.params.id;
-    
-    // Create a new span
+    logger.info('get user tasks called');
     const tracer = trace.getTracer('users');
     const currentContext = context.active();
-    
-    // Start span with active context
     const span = tracer.startSpan('get-user-task', {}, currentContext);
-    
-    // Create new context with this span
     const contextWithSpan = trace.setSpan(currentContext, span);
 
     try {
-        // Activate the new context for all operations within
-        return await context.with(contextWithSpan, async () => {
-            logger.info('Getting tasks for user', { 
-                "user_id": user_id
-            });
+        // Extract user_id from the request (set by auth middleware)
+        const user_id = req.user.id;
 
-            // Add span attributes
-            span.setAttributes({
-                'user.id': user_id,
-                'http.method': req.method,
-                'http.url': req.url,
-                'http.route': '/users/:id/tasks',
-            });
+        logger.info('Getting tasks for user', { "user_id": user_id });
 
-            // Add Redis check event
-            span.addEvent('checking_redis_cache');
-            const redisClient = req.app.locals.redisClient;
-
-            // TODO: remove this once auth is implemented
-            // const cachedData = await redisClient.get(`tasks:user:${user_id}`);
-            const cachedData = null;
-
-            if (cachedData) {
-                span.setAttributes({
-                    'cache.hit': true,
-                    'cache.key': `tasks:user:${user_id}`,
-                    'data.size': Buffer.from(cachedData).length,
-                });
-                span.addEvent('cache_hit');
-                span.end();
-                return res.json(JSON.parse(cachedData));
-            } else {
-                span.setAttributes({
-                    'cache.hit': false
-                });
-                span.addEvent('cache_miss');
-                span.addEvent('querying_database');
-
-                const tasks = await task.findAll({
-                    where: {
-                        user_id: user_id
-                    }
-                });
-
-                span.setAttributes({
-                    'db.operation': 'findAll',
-                    'db.table': 'tasks',
-                    'result.count': tasks?.length || 0
-                });
-
-                if (tasks && tasks.length > 0) {
-                    span.addEvent('updating_redis_cache');
-                    await redisClient.set(
-                        `tasks:user:${user_id}`, 
-                        JSON.stringify(tasks), 
-                        'EX', 
-                        60
-                    );
-                    
-                    span.setAttributes({
-                        'response.status_code': 200,
-                        'response.size': Buffer.from(JSON.stringify(tasks)).length
-                    });
-                    span.end();
-                    return res.json(tasks);
-                } else {
-                    span.setAttributes({
-                        'result.empty': true,
-                        'response.status_code': 404
-                    });
-                    span.addEvent('no_tasks_found');
-                    span.end();
-                    return res.status(404).json({
-                        message: `No tasks found for user id ${user_id}`
-                    });
-                }
-            }
+        // Add span attributes
+        span.setAttributes({
+            'user.id': user_id,
+            'http.method': req.method,
+            'http.url': req.url,
+            'http.route': '/users/:id/tasks',
         });
+
+
+        const redisClient = req.app.locals.redisClient;
+
+        span.addEvent('checking_redis_cache');
+        const cachedData = await redisClient.get(`tasks:user:${user_id}`);
+
+        if (cachedData) {
+            span.setAttributes({
+                'cache.hit': true,
+                'cache.key': `tasks:user:${user_id}`,
+                'data.size': Buffer.from(cachedData).length,
+            });
+            span.addEvent('cache_hit');
+            span.end();
+            return res.json(JSON.parse(cachedData));
+        } else {
+            span.setAttributes({
+                'cache.hit': false,
+            });
+            span.addEvent('cache_miss');
+            span.addEvent('querying_database');
+
+            // Fetch tasks from database
+            const tasks = await task.findAll({
+                where: {
+                    user_id: user_id,
+                },
+            });
+
+            span.setAttributes({
+                'db.operation': 'findAll',
+                'db.table': 'tasks',
+                'result.count': tasks?.length || 0,
+            });
+
+            // handle when the user has tasks in the database
+            if (tasks && tasks.length > 0) {
+                // Update Redis cache
+                span.addEvent('updating_redis_cache');
+                await redisClient.set(
+                    `tasks:user:${user_id}`,
+                    JSON.stringify(tasks),
+                    'EX',
+                    60
+                );
+                span.setAttributes({
+                    'response.status_code': 200,
+                    'response.size': Buffer.from(JSON.stringify(tasks)).length,
+                });
+                span.end(); 
+                return res.json(tasks);
+
+
+            } else {
+
+                // handle when the user has no tasks in the database
+                logger.info(`No tasks found for user ${user_id}`, { "user_id": user_id });
+                span.setAttributes({
+                    'result.empty': true,
+                    'response.status_code': 404,
+                });
+                span.addEvent('no_tasks_found');
+                span.end();
+
+                res.json([]);
+
+              
+            }
+        }
     } catch (error) {
         span.setAttributes({
             'error': true,
             'error.type': error.name,
             'error.message': error.message,
-            'response.status_code': 500
+            'response.status_code': 500,
         });
-        
+
         span.recordException(error);
         span.addEvent('error_occurred', {
             'error.type': error.name,
-            'error.message': error.message
+            'error.message': error.message,
         });
-        
+
         span.end();
-        
+
         console.error('Error fetching tasks:', error);
-        return res.status(500).json({ 
+        return res.status(500).json({
             error: error.message,
-            message: `Failed to get all tasks for user id ${user_id}` 
+            message: 'Failed to get tasks for the user',
         });
     }
 };
 
+
 const createUserTask = async (req, res) => {
-    const { title, description, status, user_id } = req.body;
- 
+    // Extract user_id from the authenticated request (set by authMiddleware)
+    const user_id = req.user.id;
+
+    // Extract task details from the request body
+    const { title, description, status } = req.body;
+
     logger.info('Creating new task', { 
-       "title": title,
-        "description": description,
-        "status": status,
-        "user_id": user_id
+        title,
+        description,
+        status,
+        user_id,
     });
 
     try {
+        // Start a tracing span
         const span = trace.getTracer('task').startSpan('create-user-task');
-        const uuid = faker.string.uuid();
+        const uuid = faker.string.uuid(); // Generate unique identifier for the task
+        const defaultStatus = "pending";
+
+        // Create the task in the database
         const newTask = await task.create({
-            title,          
+            title,
             description,
-            status,
+            defaultStatus,
             uuid,
-            user_id
+            user_id,
         });
 
+        // Respond to the client
         res.json(newTask);
-        span.setAttribute({ 
-                            'createdby_user': user_id,
-                            'task_id': newTask.id,
-                            'title': newTask.title,
-                            'description': newTask.description,
-                            'status': newTask.status,
-                            'uuid': newTask.uuid
+
+        // Add attributes to the tracing span
+        span.setAttributes({ 
+            'createdby_user': user_id,
+            'task_id': newTask.id,
+            'title': newTask.title,
+            'description': newTask.description,
+            'status': newTask.status,
+            'uuid': newTask.uuid,
         });
         span.end();
-        
-        // Handle cache invalidation after response
+
+        // Handle cache invalidation after responding
         try {
             const redisClient = req.app.locals.redisClient;
             await redisClient.del(`tasks:user:${user_id}`);
@@ -181,145 +174,157 @@ const createUserTask = async (req, res) => {
             console.error("Failed to invalidate cache:", redisError);
         }
 
+        // Log successful creation
         logger.info('Task created successfully', {  
-            "task_id": newTask.id,
-            "title": newTask.title,
-            "description": newTask.description,
-            "status": newTask.status,
-            "uuid": newTask.uuid
+            task_id: newTask.id,
+            title: newTask.title,
+            description: newTask.description,
+            status: newTask.status,
+            uuid: newTask.uuid,
         });
-        
-        // TODO: send a websocket response to the client, notifying that the task has been created
-        
-    } catch(error) {
+
+        // TODO: Send a WebSocket response to notify the client that the task has been created
+    } catch (error) {
+        console.error("Error creating task:", error);
         res.status(500).json({ 
             error: error.message,
-            message: "Failed to create task" 
-        });
-    }
-}
-
-const updateUserTask = async (req, res) => { 
-
-    const { title, description, status , uuid } = req.body;
-    const { id } = req.params;
-
-    logger.info('Updating task', {  
-        "task_id": id,
-        "title": title,
-        "description": description,
-        "status": status,
-        "uuid": uuid
-    });
-
-    try {
-        
-        const span = trace.getTracer('task').startSpan('update-user-task');
-        
-        // TODO: validate the request body and params
-
-        const updatedTask = task.update({
-            title: title,
-            description: description,
-            status: status,
-            uuid: uuid
-        }, {
-            where: {
-                id: id
-            }
-        });
-        
-         // TODO: send a response to the client, notifying that the task has been updated
-    
-        res.json(updatedTask);
-        span.end();
-
-        logger.info('Task updated successfully', {
-            "task_id": id,
-            "title": title,
-            "description": description,
-            "status": status,
-            "uuid": uuid
-        });
-
-        // TODO: Handle cache invalidation after response
-
-       
-    } catch (error) {
-        console.error('Error updating task:', error);
-        logger.error('Error updating task', {
-            "task_id": id,
-            "error": error.message
-        });
-        span.recordException(error);
-        span.end();
-        return res.status(500).json({ 
-            error: error.message,
-            message: "Failed to update task" 
+            message: "Failed to create task",
         });
     }
 };
 
-const deleteUserTask = async (req, res) => { 
-    const { id } = req.params;
 
-    logger.info('Deleting task', {
-        "task_id": id
+const updateUserTask = async (req, res) => {
+    const { title, description, status, uuid } = req.body;
+    const { id } = req.params;
+    const user_id = req.user.id; // Extracted from authMiddleware
+
+    logger.info( `Updating task of task id: ${id} -  ${description} -  ${status}`, {
+        task_id: id,
+        title,
+        description,
+        status,
+        uuid,
+        user_id,
     });
-    
-    const span = trace.getTracer('task').startSpan('delete-user-task');
-    
+
     try {
-        const deletedTasked = task.destroy({
-            where: {
-                id: id
-            }
+        const span = trace.getTracer('task').startSpan('update-user-task');
+
+        // Validate that the task belongs to the authenticated user
+        const existingTask = await task.findOne({ where: { id, user_id } });
+        if (!existingTask) {
+            span.end();
+            return res.status(403).json({ message: 'You are not authorized to update this task' });
+        }
+
+        // Update the task
+        const updatedTask = await task.update(
+            { title, description, status, uuid },
+            { where: { id } }
+        );
+
+        res.json(updatedTask);
+        span.end();
+
+        logger.info('Task updated successfully', {
+            task_id: id,
+            title,
+            description,
+            status,
+            uuid,
+            user_id,
         });
 
-        res.json(deletedTasked);
-        
-        //TODO: send a response to the client, notifying that the task has been deleted
+        logger.info(`task  ${description} is now set to status - ${status}`);
 
-        // Handle cache invalidation after response
+        // Invalidate cache for the user
         try {
             const redisClient = req.app.locals.redisClient;
+            await redisClient.del(`tasks:user:${user_id}`);
+            console.log("Cache invalidated successfully");
+        } catch (redisError) {
+            console.error("Failed to invalidate cache after update", redisError);
+        }
+    } catch (error) {
+        console.error('Error updating task:', error);
+        logger.error('Error updating task', {
+            task_id: id,
+            error: error.message,
+        });
+        span.recordException(error);
+        span.end();
+        return res.status(500).json({
+            error: error.message,
+            message: "Failed to update task",
+        });
+    }
+};
 
-            // TODO: get user_id from task object or auth session
-        
-        //    await redisClient.del(`tasks:user:${user_id}`);
-        //    console.log("Cache invalidated successfully");
-        
+const deleteUserTask = async (req, res) => {
+    const { id } = req.params;
+    const user_id = req.user.id; // Extracted from authMiddleware
+
+    logger.info('Deleting task', {
+        task_id: id,
+        user_id,
+    });
+
+    const span = trace.getTracer('task').startSpan('delete-user-task');
+
+    try {
+        // Validate that the task belongs to the authenticated user
+        const existingTask = await task.findOne({ where: { id, user_id } });
+        if (!existingTask) {
+            span.end();
+            return res.status(403).json({ message: 'You are not authorized to delete this task' });
+        }
+
+        // Delete the task
+        const deletedCount = await task.destroy({ where: { id, user_id } });
+        if (deletedCount === 0) {
+            span.end();
+            return res.status(404).json({ message: 'Task not found' });
+        }
+
+        // Send success response
+        res.status(200).json({ message: 'Task deleted successfully', task_id: id });
+
+        logger.info('Task deleted successfully', {
+            task_id: id,
+            user_id,
+        });
+
+        // Invalidate cache for the user
+        try {
+            const redisClient = req.app.locals.redisClient;
+            await redisClient.del(`tasks:user:${user_id}`);
+            console.log("Cache invalidated successfully");
         } catch (redisError) {
             console.error("Failed to invalidate cache after deletion", redisError);
         }
 
-        logger.info('Task deleted successfully', {  
-            "task_id": id
-            //,'user_id': user_id
-        });
-
-        
-        span.setAttribute({ 'task_id': id
-                            //,'user_id': user_id   
-         });
-        span.addEvent('invoking delete task');
+        span.setAttributes({ task_id: id, user_id });
+        span.addEvent('Task deletion completed');
         span.end();
 
-       
     } catch (error) {
         console.error('Error deleting task:', error);
         logger.error('Error deleting task', {
-            "task_id": id,
-            "error": error.message
+            task_id: id,
+            error: error.message,
         });
         span.recordException(error);
         span.end();
-        return res.status(500).json({ 
+        return res.status(500).json({
             error: error.message,
-            message: "Failed to delete task" 
+            message: "Failed to delete task",
         });
     }
-}
+};
+
+
+
 
 
 /// ========================================================================== ///

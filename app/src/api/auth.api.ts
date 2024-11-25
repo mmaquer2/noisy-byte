@@ -1,40 +1,37 @@
 
 async function loginUser(username: string, password: string): Promise<any> {
-   
   try {
-    // TODO: Test this code with a real hashed password
-        const response = await fetch(`/api/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                username: username,
-                password: password,
-            })
-        });
+      const response = await fetch(`/api/auth/login`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password }),
+      });
 
-        if (!response.ok) throw new Error('Failed to login');
+      if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to login');
+      }
 
-        // create new stored user local
+      // Parse the response
+      const { token, ...user } = await response.json();
 
-        console.log('response from login', response);
+      // Validate token before storing
+      if (!token) {
+          throw new Error('Token not provided in the response');
+      }
 
-        // save token in session storage
-       // const data = await response.json();
-        //console.log('data from login', data);
-        //localStorage.setItem('user', JSON.stringify(data));
-        
-        const user = await response.json();
-        console.log('user from login', user);
-        localStorage.setItem('user', JSON.stringify(user));
+      // Save token in sessionStorage
+      sessionStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      console.log('Login successful:', user);
+      return user;
 
-        return user;
-
-    } catch (error) {
-        console.error('Error logging in:', error);
-        throw error;
-    }
+  } catch (error) {
+      console.error('Error logging in:', error);
+      throw error;
+  }
 }
 
 
@@ -64,6 +61,18 @@ async function registerUser(username: string, password: string): Promise<any> {
 
 
 async function logout() {
+    try {
+        // Clear the token from sessionStorage
+        sessionStorage.removeItem('authToken');
+
+        // Clear user info from localStorage
+        localStorage.removeItem('user');
+
+        console.log('Logged out');
+    } catch (error) {
+        console.error('Error logging out:', error);
+        throw error;
+    }
 
 }
 

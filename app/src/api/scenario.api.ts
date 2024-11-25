@@ -1,5 +1,3 @@
-
-
 const scenarios = [
     {
       id: 'memory-leak',
@@ -24,7 +22,7 @@ const scenarios = [
       description: 'Sends rapid API requests to test rate limiting',
       severity: 'high',
       duration: '20s',
-      endppoint: '/scenario/network-flood'
+      endpoint: '/scenario/network-flood'
 
     },
     {
@@ -69,8 +67,6 @@ const scenarios = [
     }
   ];
 
-
-
 async function memoryLeak(){
     const response = await fetch('/api/scenario/memory-leak', {
         method: 'POST',
@@ -98,3 +94,5 @@ async function cpuSpike(){
 
     if (!response.ok) throw new Error('Failed to trigger CPU spike');
 }
+
+export { memoryLeak, cpuSpike };

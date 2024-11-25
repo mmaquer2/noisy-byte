@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Settings, Menu, LogOut, House, Disc3 } from 'lucide-react';
+import { logout } from '../api/auth.api';
 
 const NavHeader = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -10,12 +11,18 @@ const NavHeader = () => {
     home: "/dashboard",
     soundboard: "/soundboard",
     settings: "/profile",
-    logout: "/logout"
+    landing: "/",
   };
+
+  const handleLogOut  = async () => {
+    await logout();
+    navigate(locations.landing);
+
+  }
 
   const handleNavigation = (path: string) => {
     navigate(path);
-    setIsDropdownOpen(false); // Close dropdown after navigation
+    setIsDropdownOpen(false); 
   };
 
   const toggleDropdown = () => {
@@ -84,7 +91,7 @@ const NavHeader = () => {
               </button>
               <div className="my-1 border-t border-zinc-700" />
               <button 
-                onClick={() => handleNavigation(locations.logout)}
+                onClick={() => handleLogOut()}
                 className="w-full px-4 py-2 text-left text-red-400 hover:bg-zinc-700 transition-colors flex items-center"
               >
                 <LogOut className="h-4 w-4 mr-2" />

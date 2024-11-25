@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { createUserTask, getTasks, deleteTask } from '../api/task.api';
+import { createUserTask, getTasks, deleteTask, updateTask } from '../api/task.api';
 import NavHeader from '../components/NavHeader';
 import "../App.css";
 
-const fetchToDos = async (userId: string) => {
+const fetchToDos = async () => {
     try {
-        const data = await getTasks(userId);
+        const data = await getTasks(); 
+        console.log(data);
         return data;
     } catch (error) {
         console.error('Error fetching todos:', error);
@@ -13,9 +14,9 @@ const fetchToDos = async (userId: string) => {
     }
 };
 
-const createTask = async (taskData: { title: string, user_id: string }) => {
+const createTask = async (taskData: { title: string }) => {
     try {
-        const data = await createUserTask(taskData);
+        const data = await createUserTask(taskData); 
         return data;
     } catch (error) {
         console.error('Error creating task:', error);
@@ -27,70 +28,47 @@ export default function Dashboard() {
     const [newTask, setNewTask] = useState<string>('');
     const [todos, setTodos] = useState<TodoItem[]>([]);
     const [error, setError] = useState<string | null>(null);
-    const [userId, setUserId] = useState<string | null>(null);
 
-    // turning off fetch tasks to test auth setup
-
-    // useEffect(() => {
-    //     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    //     if (user?.user_id) {
-    //         setUserId(user.user_id);
-    //     } else {
-    //         console.error('No user found in local storage');
-    //         setError('Failed to fetch user. Please log in.');
-    //     }
-    // }, []);
-
-    // useEffect(() => {
-    //     if (userId) {
-    //         fetchToDos(userId)
-    //             .then(data => setTodos(data))
-    //             .catch(() => setError('Failed to load tasks'));
-    //     }
-    // }, [userId]);
+    useEffect(() => {
+        fetchToDos()
+            .then(data => setTodos(data))
+            .catch(() => setError('Failed to load tasks'));
+    }, []);
 
     const handleSubmit = useCallback(
         async (e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
-            if (!newTask.trim() || !userId) return;
+            if (!newTask.trim()) return;
 
             try {
-                const createdTask = await createTask({
-                    title: newTask.trim(),
-                    user_id: userId,
-                });
+                const createdTask = await createTask({ title: newTask.trim() });
                 setTodos(prev => [...prev, { ...createdTask, completed: createdTask.status === 'completed' }]);
                 setNewTask('');
             } catch {
                 setError('Failed to create task');
             }
         },
-        [newTask, userId]
+        [newTask]
     );
 
     const toggleTodo = useCallback(
         async (id: number, status: string, description: string) => {
             try {
+                
                 const newStatus = status === 'completed' ? 'pending' : 'completed';
-                const response = await fetch(`/api/task/update/${id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        title: description,
-                        description,
-                        uuid: id,
-                        status: newStatus,
-                    }),
-                });
+                console.log(`Toggling task ${id} ${description} to ${newStatus}`);
 
-                if (!response.ok) throw new Error('Failed to update task');
-
+                const result = await updateTask(id, newStatus, description);
+                
+                console.log('result', result);
+                
+                // update the UI by toggling the status of the task
                 setTodos(prev =>
                     prev.map(todo => (todo.id === id ? { ...todo, status: newStatus, completed: newStatus === 'completed' } : todo))
                 );
-            } catch {
+            
+            } catch(error) {
+                console.error('Failed to update task:', error);
                 setError('Failed to update task');
             }
         },
@@ -100,16 +78,18 @@ export default function Dashboard() {
     const deleteTodo = useCallback(
         async (id: number) => {
             try {
-                const response = await deleteTask(id, userId);
-                if (!response.ok) throw new Error('Failed to delete task');
+                await deleteTask(id); // Call the API function to delete the task
+            
+                // Update the UI by filtering out the deleted task
                 setTodos(prev => prev.filter(todo => todo.id !== id));
-            } catch {
+            } catch (error) {
+                console.error('Failed to delete task:', error);
                 setError('Failed to delete task');
             }
         },
         []
     );
-
+    
     return (
         <>
             <NavHeader />
