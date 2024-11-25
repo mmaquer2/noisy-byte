@@ -15,8 +15,8 @@ const User = sequelize.define('User', {
         allowNull: false
     },
     avatar: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4
+        type: DataTypes.TEXT,
+        defaultValue: DataTypes.TEXT
     }
 });
 

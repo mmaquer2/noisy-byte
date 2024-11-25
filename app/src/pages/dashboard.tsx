@@ -29,23 +29,25 @@ export default function Dashboard() {
     const [error, setError] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
 
-    useEffect(() => {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (user?.user_id) {
-            setUserId(user.user_id);
-        } else {
-            console.error('No user found in local storage');
-            setError('Failed to fetch user. Please log in.');
-        }
-    }, []);
+    // turning off fetch tasks to test auth setup
 
-    useEffect(() => {
-        if (userId) {
-            fetchToDos(userId)
-                .then(data => setTodos(data))
-                .catch(() => setError('Failed to load tasks'));
-        }
-    }, [userId]);
+    // useEffect(() => {
+    //     const user = JSON.parse(localStorage.getItem('user') || '{}');
+    //     if (user?.user_id) {
+    //         setUserId(user.user_id);
+    //     } else {
+    //         console.error('No user found in local storage');
+    //         setError('Failed to fetch user. Please log in.');
+    //     }
+    // }, []);
+
+    // useEffect(() => {
+    //     if (userId) {
+    //         fetchToDos(userId)
+    //             .then(data => setTodos(data))
+    //             .catch(() => setError('Failed to load tasks'));
+    //     }
+    // }, [userId]);
 
     const handleSubmit = useCallback(
         async (e: React.FormEvent<HTMLFormElement>) => {

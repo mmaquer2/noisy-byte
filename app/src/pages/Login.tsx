@@ -34,10 +34,11 @@ export default function Login() {
 
         try {
             console.log('Logging in with:', formData);
-    
             const user = await loginUser(formData.username, formData.password);
-            console.log('Logged in:', user);
-            navigate('/dashboard');
+            if(user){
+                navigate('/dashboard');
+            }
+            
 
         } catch (err) {
             setError('Invalid username or password');

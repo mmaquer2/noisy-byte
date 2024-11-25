@@ -10,15 +10,17 @@ const registerNewUser = async (req, res) => {
     try {
         
         // TODO: confirm that the request body contains the required fields
-        //const { username, password, email } = req.body;
+        //const { username, password, email, avatar } = req.body;
 
         // for testing only
-        const username = "test";
-        const password = "Test12345!@";
-        const email = "hello@gmail.com";
+        const new_username = "test";
+        const new_password = "test";
+        const new_email = "hello@gmail.com";
+        const new_avatar = "test.jpg";
+       // const new_uuid = v4();
 
         // Validate input
-        if (!username || !password || !email) {
+        if (!new_username || !new_password || !new_email) {
             logger.warn('Invalid user creation attempt - missing fields');
             return res.status(400).json({ 
                 message: 'Username, password, and email are required' 
@@ -26,45 +28,35 @@ const registerNewUser = async (req, res) => {
         }
 
         // Check if user exists
-        const existingUser = await user.findOne({ 
-            where: { 
-                [Op.or]: [
-                    { username },
-                    { email }
-                ]
-            }
-        });
+        // const existingUser = await user.findOne({ 
+        //     where: { 
+        //         [Op.or]: [
+        //             { username },
+        //             { email }
+        //         ]
+        //     }
+        // });
 
-        if (existingUser) {
-            logger.warn('User creation failed - duplicate user', { username, email });
-            return res.status(400).json({ 
-                message: 'Username or email already exists' 
-            });
-        }
+        // if (existingUser) {
+        //     logger.warn('User creation failed - duplicate user', { username, email });
+        //     return res.status(400).json({ 
+        //         message: 'Username or email already exists' 
+        //     });
+        // }
+
 
         // Hash password
         const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const new_hashedPassword = await bcrypt.hash(new_password, saltRounds);
         
-        //const newUser = await user.create({ username: randomName, password: randomPassword, email: randomEmail, avatar: randomAvatar });
-
         // Create user
         const newUser = await user.create({
-            username,
-            email,
-            password: hashedPassword,
-            uuid: v4() // Unique identifier for user
+            username: new_username,
+            email: new_email,
+            password: new_hashedPassword,
+            avatar: new_avatar
         });
 
-        // Generate JWT token
-        const token = jwt.sign(
-            { 
-                id: newUser.id, 
-                username: newUser.username 
-            },
-            process.env.JWT_SECRET || 'your-secret-key',
-            { expiresIn: '24h' }
-        );
 
         logger.info('User created successfully', { 
             userId: newUser.id,
@@ -78,15 +70,18 @@ const registerNewUser = async (req, res) => {
                 username: newUser.username,
                 email: newUser.email,
                 uuid: newUser.uuid
-            },
-            token
+            }
+           // ,token
         });
 
     } catch (error) {
+        
         logger.error('User creation failed', { 
             error: error.message,
             stack: error.stack 
         });
+
+        console.log(error);
         res.status(500).json({ 
             message: 'Failed to create user' 
         });
@@ -124,25 +119,32 @@ const login = async (req, res) => {
     try {
         const { username, password } = req.body;
 
+        console.log("login attempt with username: ", username);
+
         // Find user
-        const user = await user.findOne({ where: { username } });
-        if (!user) {
+        const logged_user = await user.findOne({ where: { username } });
+        if (!logged_user) {
             logger.warn('Login attempt with non-existent user', { username });
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
+        console.log("found user: ", logged_user)
+        console.log("trying to login for user: ", logged_user)
+        console.log("trying to login for user: ", logged_user.password)
+
         // Verify password
-        const isValidPassword = await bcrypt.compare(password, user.password);
+        const isValidPassword = await bcrypt.compare(password, logged_user.password);
+        
         if (!isValidPassword) {
             logger.warn('Invalid password attempt', { username });
             return res.status(401).json({ message: 'Invalid credentials' });
         }
-
+        
         // Generate token
         const token = jwt.sign(
             { 
-                id: user.id, 
-                username: user.username 
+                id: logged_user.id, 
+                username: logged_user.username 
             },
             process.env.JWT_SECRET || 'your-secret-key',
             { expiresIn: '24h' }
@@ -151,15 +153,12 @@ const login = async (req, res) => {
         logger.info('User logged in successfully', { userId: user.id });
 
         res.json({
-            token,
-            user: {
-                id: user.id,
-                username: user.username
-            }
+            token
         });
 
     } catch (error) {
         logger.error('Login error', { error: error.message });
+        console.log(error);
         res.status(500).json({ message: 'Login failed' });
     }
 };
@@ -175,9 +174,32 @@ async function logout(req, res) {
 }
 
 
+const authMiddleware = async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader?.startsWith('Bearer ')) {
+            return res.status(401).json({ message: 'No token provided' });
+        }
+
+        const token = authHeader.split(' ')[1];
+        
+        // Verify the token
+        const decoded = jwt.verify(token, "your-secret-key");
+        
+        // Attach userId to request object
+        req.userId = decoded.userId;
+        
+        next();
+    } catch (error) {
+        return res.status(401).json({ message: 'Invalid token' });
+    }
+};
+
+
 module.exports = {
     registerNewUser,
     validatePassword,
     logout,
-    login
+    login,
+    authMiddleware
 }

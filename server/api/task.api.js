@@ -5,6 +5,7 @@ const logger = require('../config/logger');
 const { context } = require('@opentelemetry/api');
 
 
+
 /// ==================== HELPER FUNCTIONS =========================== ///
 
 // function to invalidate cache of a specific user by user_id
@@ -21,6 +22,9 @@ async function validateTask(task) {
 /// ===================  USER TASK CRUD FUNCTIONS ====================== ///
 
 const getUserTask = async (req, res) => {
+
+
+    // TODO: refactor this to use auth middleware to get user_id, from session or token
     const user_id = req.params.id;
     
     // Create a new span
@@ -53,7 +57,7 @@ const getUserTask = async (req, res) => {
             const redisClient = req.app.locals.redisClient;
 
             // TODO: remove this once auth is implemented
-           // const cachedData = await redisClient.get(`tasks:user:${user_id}`);
+            // const cachedData = await redisClient.get(`tasks:user:${user_id}`);
             const cachedData = null;
 
             if (cachedData) {

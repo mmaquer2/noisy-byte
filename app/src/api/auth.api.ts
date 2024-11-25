@@ -1,29 +1,6 @@
 
 async function loginUser(username: string, password: string): Promise<any> {
    
-  // testing login only to mock the login process
-   if (username === 'admin' && password === 'admin') {
-    console.log('Logged in successfully');
-    localStorage.setItem('user', 
-      JSON.stringify({
-          username: 'admin',
-          email: 'admin',
-          avatar: '',
-          user_id : 1,
-          token: '1234'
-  }));
-  
-  return {
-        username: 'admin',
-        email: 'admin',
-        avatar: '',
-        user_id : 1,
-        token: '1234'
-    };
-
-    
-  }
-
   try {
     // TODO: Test this code with a real hashed password
         const response = await fetch(`/api/auth/login`, {
@@ -41,14 +18,23 @@ async function loginUser(username: string, password: string): Promise<any> {
 
         // create new stored user local
 
+        console.log('response from login', response);
 
-        return await response.json();
+        // save token in session storage
+       // const data = await response.json();
+        //console.log('data from login', data);
+        //localStorage.setItem('user', JSON.stringify(data));
+        
+        const user = await response.json();
+        console.log('user from login', user);
+        localStorage.setItem('user', JSON.stringify(user));
+
+        return user;
 
     } catch (error) {
         console.error('Error logging in:', error);
         throw error;
     }
- 
 }
 
 
