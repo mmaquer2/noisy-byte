@@ -1,4 +1,4 @@
-name: Noisy Byte Frontend Tests 
+name: Noisy Bytes Frontend Tests
 on:
   push:
     branches: [ "*" ]
@@ -9,7 +9,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # Add Redis service container
     services:
       redis:
         image: redis
@@ -40,10 +39,46 @@ jobs:
       working-directory: ./server
       env:
         REDIS_URL: redis://localhost:6379
-        # Add other environment variables your app needs
         NODE_ENV: test
         JWT_SECRET: test-secret
       run: |
         npm run build --if-present
         npm start & # Run in background
-        sleep 10 # Wait for server to start
+        sleep 10 # Wait for backend to start
+
+    # Frontend setup 
+    - name: Setup Node.js for Frontend
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: './app/package-lock.json'  
+
+    - name: Install Frontend Dependencies
+      working-directory: ./app  
+      run: npm ci
+
+    - name: Build Frontend
+      working-directory: ./app  
+      run: npm run build
+
+    - name: Start Frontend
+      working-directory: ./app  
+      run: |
+        npm run preview & # Run in background
+        sleep 10 # Wait for frontend to start
+
+    - name: Install Playwright Browsers
+      working-directory: ./app  
+      run: npx playwright install --with-deps
+
+    - name: Run Playwright tests
+      working-directory: ./app 
+      run: npx playwright test
+
+    - uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: playwright-report
+        path: app/playwright-report/  
+        retention-days: 30
