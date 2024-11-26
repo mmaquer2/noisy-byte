@@ -2,6 +2,11 @@
 
 ![logo](./.assets/img/logo.svg)
 
+
+![backend tests](https://github.com/mmaquer2/noisy-byte/blob/feature/start-soundboard-testing/.github/workflows/backend-tests.yml/badge.svg)
+![frontend tests](https://github.com/mmaquer2/noisy-byte/blob/feature/start-soundboard-testing/.github/workflows/frontend-tests.yml/badge.svg)
+
+
 ![Node](https://img.shields.io/badge/Node.js-18.x-green)
 ![Redis](https://img.shields.io/badge/Redis-latest-red)
 ![React](https://img.shields.io/badge/React-Latest-blue)
