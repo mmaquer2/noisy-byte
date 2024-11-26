@@ -2,6 +2,21 @@
 
 ![logo](./.assets/img/logo.svg)
 
+
+
+![build]()
+
+![backend tests](https://github.com/mmaquer2/noisy-byte/actions/workflows/backend-tests.yml/badge.svg)
+![frontend tests](https://github.com/mmaquer2/noisy-byte/actions/workflows/frontend-tests.yml/badge.svg)
+
+
+![Node](https://img.shields.io/badge/Node.js-18.x-green)
+![Redis](https://img.shields.io/badge/Redis-latest-red)
+![React](https://img.shields.io/badge/React-Latest-blue)
+[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-enabled-blue)](https://opentelemetry.io/)
+[![Jaeger](https://img.shields.io/badge/Jaeger-enabled-blue)](https://www.jaegertracing.io/)
+
+
 # noisy byte
 
 a test app for experimenting with observability instrumentation and performance engineering concepts. Made with react, node js express, redis, and sqlite3.
