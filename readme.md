@@ -72,9 +72,26 @@ npm run start
 
 ```
 
+## testing
+
+The api server is tested with jest and supertest. And the front end is tested with playwright. To run the tests, you can use the following steps.
+
+the test suite must pass before making a pull request to the main branch.
+
+```bash
+# step 1: run the server tests
+cd noisy-byte/server
+npm run test
+
+# step 2: run the client tests
+cd noisy-byte/app
+npx playwright test
+
+```
+
 ### setting up jaeger for tracing (optional)
 
-The application is thoroughly instrumented with open telemetry. If you would like to setup jaeger for visualizing the tracing telemtery, you can follow the steps below. 
+The application is thoroughly instrumented with open telemetry. If you would like to setup jaeger for visualizing the tracing telemtery, you can follow the steps below to set up a local instance with docker. 
 
 The instrumentation  config code can be found in the /server/config/instrumentation.js file.
 
